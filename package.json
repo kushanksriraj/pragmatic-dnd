@@ -1,8 +1,8 @@
 {
   "name": "board",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A simple example deployed using react-codesandboxer",
-  "main": "index.tsx",
+  "main": "main.tsx",
   "dependencies": {
     "@atlaskit/analytics-next": "^9.2.0",
     "@atlaskit/avatar": "21.5.2",
@@ -22,7 +22,6 @@
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "1.1.1",
     "@atlaskit/primitives": "5.5.3",
     "@atlaskit/tokens": "1.43.1",
-    "@babel/plugin-proposal-decorators": "7.24.1",
     "@emotion/react": "11.7.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
