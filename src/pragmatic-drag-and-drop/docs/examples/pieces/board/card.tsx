@@ -70,7 +70,6 @@ type CardPrimitiveProps = {
   closestEdge: Edge | null;
   item: Person;
   state: State;
-  actionMenuTriggerRef?: Ref<HTMLButtonElement>;
 };
 
 const CardPrimitive = forwardRef<HTMLDivElement, CardPrimitiveProps>(
@@ -123,7 +122,6 @@ export const Card = memo(function Card({ item }: { item: Person }) {
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
   const [state, setState] = useState<State>(idleState);
 
-  const actionMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const { instanceId, registerCard } = useBoardContext();
   useEffect(() => {
     invariant(ref.current);
@@ -209,7 +207,6 @@ export const Card = memo(function Card({ item }: { item: Person }) {
         item={item}
         state={state}
         closestEdge={closestEdge}
-        actionMenuTriggerRef={actionMenuTriggerRef}
       />
       {state.type === "preview" &&
         ReactDOM.createPortal(

@@ -2,8 +2,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 // eslint-disable-next-line @atlaskit/design-system/no-banned-imports
 import Heading from "@atlaskit/heading";
-// This is the smaller MoreIcon soon to be more easily accessible with the
-// ongoing icon project
 import { easeInOut } from "@atlaskit/motion/curves";
 import { mediumDurationMs } from "@atlaskit/motion/durations";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
