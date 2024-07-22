@@ -6,12 +6,6 @@ import type { ColumnType } from "../../data/people";
 export type BoardContextValue = {
   getColumns: () => ColumnType[];
 
-  reorderCard: (args: {
-    columnId: string;
-    startIndex: number;
-    finishIndex: number;
-  }) => void;
-
   moveCard: (args: {
     startColumnId: string;
     finishColumnId: string;

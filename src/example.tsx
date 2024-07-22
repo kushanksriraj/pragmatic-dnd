@@ -3,14 +3,11 @@ import invariant from "tiny-invariant";
 import { triggerPostMoveFlash } from "@atlaskit/pragmatic-drag-and-drop-flourish/trigger-post-move-flash";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types";
-import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import * as liveRegion from "@atlaskit/pragmatic-drag-and-drop-live-region";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
 import {
   ColumnMap,
-  ColumnType,
   getBasicData,
   Person,
 } from "./pragmatic-drag-and-drop/docs/examples/data/people";
@@ -22,25 +19,12 @@ import {
 import { Column } from "./pragmatic-drag-and-drop/docs/examples/pieces/board/column";
 import { createRegistry } from "./pragmatic-drag-and-drop/docs/examples/pieces/board/registry";
 
-type Outcome =
-  | {
-      type: "column-reorder";
-      columnId: string;
-      startIndex: number;
-      finishIndex: number;
-    }
-  | {
-      type: "card-reorder";
-      columnId: string;
-      startIndex: number;
-      finishIndex: number;
-    }
-  | {
-      type: "card-move";
-      finishColumnId: string;
-      itemIndexInStartColumn: number;
-      itemIndexInFinishColumn: number;
-    };
+type Outcome = {
+  type: "card-move";
+  finishColumnId: string;
+  itemIndexInStartColumn: number;
+  itemIndexInFinishColumn: number;
+};
 
 type Trigger = "pointer" | "keyboard";
 
@@ -78,49 +62,6 @@ export default function BoardExample() {
       return;
     }
     const { outcome, trigger } = lastOperation;
-
-    if (outcome.type === "column-reorder") {
-      const { startIndex, finishIndex } = outcome;
-
-      const { columnMap, orderedColumnIds } = stableData.current;
-      const sourceColumn = columnMap[orderedColumnIds[finishIndex]];
-
-      const entry = registry.getColumn(sourceColumn.columnId);
-      triggerPostMoveFlash(entry.element);
-
-      liveRegion.announce(
-        `You've moved ${sourceColumn.title} from position ${
-          startIndex + 1
-        } to position ${finishIndex + 1} of ${orderedColumnIds.length}.`
-      );
-
-      return;
-    }
-
-    if (outcome.type === "card-reorder") {
-      const { columnId, startIndex, finishIndex } = outcome;
-
-      const { columnMap } = stableData.current;
-      const column = columnMap[columnId];
-      const item = column.items[finishIndex];
-
-      const entry = registry.getCard(item.userId);
-      triggerPostMoveFlash(entry.element);
-
-      if (trigger !== "keyboard") {
-        return;
-      }
-
-      liveRegion.announce(
-        `You've moved ${item.name} from position ${
-          startIndex + 1
-        } to position ${finishIndex + 1} of ${column.items.length} in the ${
-          column.title
-        } column.`
-      );
-
-      return;
-    }
 
     if (outcome.type === "card-move") {
       const {
@@ -172,56 +113,6 @@ export default function BoardExample() {
     return orderedColumnIds.map((columnId) => columnMap[columnId]);
   }, []);
 
-  const reorderCard = useCallback(
-    ({
-      columnId,
-      startIndex,
-      finishIndex,
-      trigger = "keyboard",
-    }: {
-      columnId: string;
-      startIndex: number;
-      finishIndex: number;
-      trigger?: Trigger;
-    }) => {
-      setData((data) => {
-        const sourceColumn = data.columnMap[columnId];
-        const updatedItems = reorder({
-          list: sourceColumn.items,
-          startIndex,
-          finishIndex,
-        });
-
-        const updatedSourceColumn: ColumnType = {
-          ...sourceColumn,
-          items: updatedItems,
-        };
-
-        const updatedMap: ColumnMap = {
-          ...data.columnMap,
-          [columnId]: updatedSourceColumn,
-        };
-
-        const outcome: Outcome | null = {
-          type: "card-reorder",
-          columnId,
-          startIndex,
-          finishIndex,
-        };
-
-        return {
-          ...data,
-          columnMap: updatedMap,
-          lastOperation: {
-            trigger: trigger,
-            outcome,
-          },
-        };
-      });
-    },
-    []
-  );
-
   const moveCard = useCallback(
     ({
       startColumnId,
@@ -236,7 +127,6 @@ export default function BoardExample() {
       itemIndexInFinishColumn?: number;
       trigger?: "pointer" | "keyboard";
     }) => {
-      // invalid cross column movement
       if (startColumnId === finishColumnId) {
         return;
       }
@@ -322,18 +212,6 @@ export default function BoardExample() {
 
               // reordering in same column
               if (sourceColumn === destinationColumn) {
-                const destinationIndex = getReorderDestinationIndex({
-                  startIndex: itemIndex,
-                  indexOfTarget: sourceColumn.items.length - 1,
-                  closestEdgeOfTarget: null,
-                  axis: "vertical",
-                });
-                reorderCard({
-                  columnId: sourceColumn.columnId,
-                  startIndex: itemIndex,
-                  finishIndex: destinationIndex,
-                  trigger: "pointer",
-                });
                 return;
               }
 
@@ -362,20 +240,7 @@ export default function BoardExample() {
                 destinationCardRecord.data
               );
 
-              // case 1: ordering in the same column
               if (sourceColumn === destinationColumn) {
-                const destinationIndex = getReorderDestinationIndex({
-                  startIndex: itemIndex,
-                  indexOfTarget,
-                  closestEdgeOfTarget,
-                  axis: "vertical",
-                });
-                reorderCard({
-                  columnId: sourceColumn.columnId,
-                  startIndex: itemIndex,
-                  finishIndex: destinationIndex,
-                  trigger: "pointer",
-                });
                 return;
               }
 
@@ -398,18 +263,17 @@ export default function BoardExample() {
         },
       })
     );
-  }, [data, instanceId, moveCard, reorderCard]);
+  }, [data, instanceId, moveCard]);
 
   const contextValue: BoardContextValue = useMemo(() => {
     return {
       getColumns,
-      reorderCard,
       moveCard,
       registerCard: registry.registerCard,
       registerColumn: registry.registerColumn,
       instanceId,
     };
-  }, [getColumns, reorderCard, registry, moveCard, instanceId]);
+  }, [getColumns, registry, moveCard, instanceId]);
 
   return (
     <BoardContext.Provider value={contextValue}>
