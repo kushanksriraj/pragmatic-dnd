@@ -1,13 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import invariant from "tiny-invariant";
-
 import { triggerPostMoveFlash } from "@atlaskit/pragmatic-drag-and-drop-flourish/trigger-post-move-flash";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types";
@@ -16,7 +8,6 @@ import * as liveRegion from "@atlaskit/pragmatic-drag-and-drop-live-region";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
-
 import {
   ColumnMap,
   ColumnType,
@@ -181,41 +172,6 @@ export default function BoardExample() {
     return orderedColumnIds.map((columnId) => columnMap[columnId]);
   }, []);
 
-  const reorderColumn = useCallback(
-    ({
-      startIndex,
-      finishIndex,
-      trigger = "keyboard",
-    }: {
-      startIndex: number;
-      finishIndex: number;
-      trigger?: Trigger;
-    }) => {
-      setData((data) => {
-        const outcome: Outcome = {
-          type: "column-reorder",
-          columnId: data.orderedColumnIds[startIndex],
-          startIndex,
-          finishIndex,
-        };
-
-        return {
-          ...data,
-          orderedColumnIds: reorder({
-            list: data.orderedColumnIds,
-            startIndex,
-            finishIndex,
-          }),
-          lastOperation: {
-            outcome,
-            trigger: trigger,
-          },
-        };
-      });
-    },
-    []
-  );
-
   const reorderCard = useCallback(
     ({
       columnId,
@@ -341,32 +297,9 @@ export default function BoardExample() {
             return;
           }
           // need to handle drop
-
           // 1. remove element from original position
           // 2. move to new position
 
-          if (source.data.type === "column") {
-            const startIndex: number = data.orderedColumnIds.findIndex(
-              (columnId) => columnId === source.data.columnId
-            );
-
-            const target = location.current.dropTargets[0];
-            const indexOfTarget: number = data.orderedColumnIds.findIndex(
-              (id) => id === target.data.columnId
-            );
-            const closestEdgeOfTarget: Edge | null = extractClosestEdge(
-              target.data
-            );
-
-            const finishIndex = getReorderDestinationIndex({
-              startIndex,
-              indexOfTarget,
-              closestEdgeOfTarget,
-              axis: "horizontal",
-            });
-
-            reorderColumn({ startIndex, finishIndex, trigger: "pointer" });
-          }
           // Dragging a card
           if (source.data.type === "card") {
             const itemId = source.data.itemId;
@@ -465,19 +398,18 @@ export default function BoardExample() {
         },
       })
     );
-  }, [data, instanceId, moveCard, reorderCard, reorderColumn]);
+  }, [data, instanceId, moveCard, reorderCard]);
 
   const contextValue: BoardContextValue = useMemo(() => {
     return {
       getColumns,
-      reorderColumn,
       reorderCard,
       moveCard,
       registerCard: registry.registerCard,
       registerColumn: registry.registerColumn,
       instanceId,
     };
-  }, [getColumns, reorderColumn, reorderCard, registry, moveCard, instanceId]);
+  }, [getColumns, reorderCard, registry, moveCard, instanceId]);
 
   return (
     <BoardContext.Provider value={contextValue}>

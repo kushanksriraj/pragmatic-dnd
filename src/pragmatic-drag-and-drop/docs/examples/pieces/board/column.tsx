@@ -1,27 +1,10 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import invariant from "tiny-invariant";
-
-import { IconButton } from "@atlaskit/button/new";
-import DropdownMenu, {
-  CustomTriggerProps,
-  DropdownItem,
-  DropdownItemGroup,
-} from "@atlaskit/dropdown-menu";
 // eslint-disable-next-line @atlaskit/design-system/no-banned-imports
-import mergeRefs from "@atlaskit/ds-lib/merge-refs";
 import Heading from "@atlaskit/heading";
 // This is the smaller MoreIcon soon to be more easily accessible with the
 // ongoing icon project
-import MoreIcon from "@atlaskit/icon/glyph/editor/more";
 import { easeInOut } from "@atlaskit/motion/curves";
 import { mediumDurationMs } from "@atlaskit/motion/durations";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
@@ -40,16 +23,10 @@ import { centerUnderPointer } from "@atlaskit/pragmatic-drag-and-drop/element/ce
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { Box, Flex, Inline, Stack, xcss } from "@atlaskit/primitives";
 import { token } from "@atlaskit/tokens";
-
 import { ColumnType } from "../../data/people";
-
 import { useBoardContext } from "./board-context";
 import { Card } from "./card";
-import {
-  ColumnContext,
-  ColumnContextProps,
-  useColumnContext,
-} from "./column-context";
+import { ColumnContext, ColumnContextProps } from "./column-context";
 
 const columnStyles = xcss({
   width: "250px",
@@ -68,7 +45,6 @@ const stackStyles = xcss({
   // allow the container to be shrunk by a parent height
   // https://www.joshwcomeau.com/css/interactive-guide-to-flexbox/#the-minimum-size-gotcha-11
   minHeight: "0",
-
   // ensure our card list grows to be all the available space
   // so that users can easily drop on en empty list
   flexGrow: 1,
@@ -316,7 +292,6 @@ export const Column = memo(function Column({ column }: { column: ColumnType }) {
             >
               {column.title}
             </Heading>
-            <ActionMenu />
           </Inline>
           <Box xcss={scrollContainerStyles} ref={scrollableRef}>
             <Stack xcss={cardListStyles} ref={cardListRef} space="space.100">
@@ -354,67 +329,5 @@ function SafariColumnPreview({ column }: { column: ColumnType }) {
         {column.title}
       </Heading>
     </Box>
-  );
-}
-
-function ActionMenu() {
-  return (
-    <DropdownMenu trigger={DropdownMenuTrigger}>
-      <ActionMenuItems />
-    </DropdownMenu>
-  );
-}
-
-function ActionMenuItems() {
-  const { columnId } = useColumnContext();
-  const { getColumns, reorderColumn } = useBoardContext();
-
-  const columns = getColumns();
-  const startIndex = columns.findIndex(
-    (column) => column.columnId === columnId
-  );
-
-  const moveLeft = useCallback(() => {
-    reorderColumn({
-      startIndex,
-      finishIndex: startIndex - 1,
-    });
-  }, [reorderColumn, startIndex]);
-
-  const moveRight = useCallback(() => {
-    reorderColumn({
-      startIndex,
-      finishIndex: startIndex + 1,
-    });
-  }, [reorderColumn, startIndex]);
-
-  const isMoveLeftDisabled = startIndex === 0;
-  const isMoveRightDisabled = startIndex === columns.length - 1;
-
-  return (
-    <DropdownItemGroup>
-      <DropdownItem onClick={moveLeft} isDisabled={isMoveLeftDisabled}>
-        Move left
-      </DropdownItem>
-      <DropdownItem onClick={moveRight} isDisabled={isMoveRightDisabled}>
-        Move right
-      </DropdownItem>
-    </DropdownItemGroup>
-  );
-}
-
-function DropdownMenuTrigger({
-  triggerRef,
-  ...triggerProps
-}: CustomTriggerProps) {
-  return (
-    <IconButton
-      ref={mergeRefs([triggerRef])}
-      appearance="subtle"
-      label="Actions"
-      spacing="compact"
-      icon={MoreIcon}
-      {...triggerProps}
-    />
   );
 }
