@@ -186,6 +186,7 @@ export const Column = memo(function Column({ column }: { column: ColumnType }) {
           </Inline>
           <Box xcss={scrollContainerStyles} ref={scrollableRef}>
             <Stack xcss={cardListStyles} ref={cardListRef} space="space.100">
+              {/* Virtualization can be added here? */}
               {column.items.map((item) => (
                 <Card item={item} key={item.userId} />
               ))}

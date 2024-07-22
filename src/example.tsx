@@ -49,6 +49,7 @@ export default function BoardExample() {
   });
 
   const stableData = useRef(data);
+
   useEffect(() => {
     stableData.current = data;
   }, [data]);
@@ -61,46 +62,14 @@ export default function BoardExample() {
     if (lastOperation === null) {
       return;
     }
-    const { outcome, trigger } = lastOperation;
-
+    const { outcome } = lastOperation;
     if (outcome.type === "card-move") {
-      const {
-        finishColumnId,
-        itemIndexInStartColumn,
-        itemIndexInFinishColumn,
-      } = outcome;
-
+      const { finishColumnId, itemIndexInFinishColumn } = outcome;
       const data = stableData.current;
       const destinationColumn = data.columnMap[finishColumnId];
       const item = destinationColumn.items[itemIndexInFinishColumn];
-
-      const finishPosition =
-        typeof itemIndexInFinishColumn === "number"
-          ? itemIndexInFinishColumn + 1
-          : destinationColumn.items.length;
-
       const entry = registry.getCard(item.userId);
       triggerPostMoveFlash(entry.element);
-
-      if (trigger !== "keyboard") {
-        return;
-      }
-
-      liveRegion.announce(
-        `You've moved ${item.name} from position ${
-          itemIndexInStartColumn + 1
-        } to position ${finishPosition} in the ${
-          destinationColumn.title
-        } column.`
-      );
-
-      /**
-       * Because the card has moved column, it will have remounted.
-       * This means we need to manually restore focus to it.
-       */
-      entry.actionMenuTrigger.focus();
-
-      return;
     }
   }, [lastOperation, registry]);
 
@@ -225,6 +194,7 @@ export default function BoardExample() {
               return;
             }
 
+            // [not sure what is the diff between the above func and this]
             // dropping in a column (relative to a card)
             if (location.current.dropTargets.length === 2) {
               const [destinationCardRecord, destinationColumnRecord] =

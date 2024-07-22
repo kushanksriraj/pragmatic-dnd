@@ -123,6 +123,7 @@ export const Card = memo(function Card({ item }: { item: Person }) {
   const [state, setState] = useState<State>(idleState);
 
   const { instanceId, registerCard } = useBoardContext();
+
   useEffect(() => {
     invariant(ref.current);
     return registerCard({
